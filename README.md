@@ -27,58 +27,24 @@ Self-Driving Car Engineer Nanodegree Program
 3. Compile: `cmake .. && make`
 4. Run it: `./pid`. 
 
-## Editor Settings
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+## Reflection
+In this project I implemented a PID controller for both the throttle and the steering of the car. The implementation of the pid controller equation can be found on the PID.cpp under the method CalculateControl.
+A pid controller is provides control based on feedback from a system, it takes the error value ( difference between the desired values of a system and the actual measured system ) and adjusts a control like steering / throttle to reduce this error.
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+In case of the steering angle the error term is the cross track error (CTE) which tells us how much a vehicle has deviated from a straight line between two waypoints of the planned route. This can be used to correct the steering of the vehicle to make sure it follows the planned route. 
 
-## Code Style
+The three components of the equation have different effects on the control:
+1. The P constant determines the correction in proportion to the error. if the error is large and positive, the error is large and positive. The P component is the main variable which brings the car to a correct state.
+2. The D constant determines the correction based on the rate of change of the error. This helps the controller converge to a stable state faster and smoother than the P control alone.
+3. The I constant determines the control component based on the Integral of the error. This helps correct for any bias such as a vehicle being built slightly disproportionally/easily turning left but not right. In an ideal system the I constant may not do much but in real life scenarios, without the correction of the I control we would find the car to always converge to a constant error term which isnt 0.
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+To determine the P,D and I constants for the vehicle in the simulation, i set all the constants to 0 and manually tweeked each variable in the order P,D and I to determine suitable values. The constants I used were P= 0.15, I=0.0004, D=6.0
 
-## Project Instructions and Rubric
+To determine the PID controller for the Throttle I decided to design a new error term which i call the speed error.
+I define this error as  speed_error = (speed - 400)/ (20 + cte + angle)
+The error term for speed control was designed to make the car slow down when it is trying to take a very large turn or when the cross tracking error is very high but try to make sure that the car tries to accelerate to maximum speed. The maximum speed is acheived by the numerator term (speed - 400) and the control for slowing down is found in the denominator term ( 20 + cte + angle). The constants 400 was chosen to ensure high acceleration and the constant 20 was chosen in this case to ensure that the error term is not getting a divide by 0 error.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+The same method of manually tweaking the constants were used to determine the throttle control. The constants I used were P=0.15, I=0, D=0.4
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
-
-## Hints!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+A video of the car driving with the designed controller can be found on this [video](https://youtu.be/p_8nCkNSr68)
